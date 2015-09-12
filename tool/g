@@ -1,0 +1,45 @@
+#!/bin/sh
+#not sudo
+
+#gpio full path
+GPIOPATH=/home/pi/wiringPi/gpio
+export GPIOPATH
+GPIO=$GPIOPATH/gpio
+export GPIO
+
+# USE pin:5(wiringPi Lib Pin No.)
+#	=18(Hardware Header Pin No.)
+#	=24(BCM2835 Lib Pin No.)
+# URL:wiringpi.com/pins
+
+# default pull up/down: BCM2835 Lib 24pin=0=pulldown
+# URL:d.hatena.ne.jp/hnw/20150607
+
+# Pullup set:
+# google key word:raspi nyuuryoku puruappu -> Link:Raspberry Pinomemo
+# cache URL:(http://www.siio.index.php?How2RaspberryPi)
+
+## sudo:
+##echo 5 > /sys/class/gpio/export
+##echo "in" > /sys/class/gpio/gpio5/direction
+##echo "high" > /sys/class/gpio/gpio5/direction
+
+# MODE set: pin 5 = INPUT MODE
+sudo $GPIO mode 5 up
+sudo $GPIO mode 5 in
+#gpio -g mode 24 in #24=BCM2835 Lib Pin no.
+
+# INIT
+SW=0
+export SW
+
+# INPUT: pin 5 -> SW
+SW=`sudo $GPIO read 5`
+
+# OUTPUT
+echo $SW >> /tmp/w_log
+#echo "\n" >> /tmp/w_log
+
+# finish
+## sudo:
+##echo 5 > /sys/class/gpio/unexport

@@ -1,0 +1,8 @@
+#cat /sys/class/thermal/thermal_zone0/temp > /tmp/w_o
+SW="0"
+export SW
+SW=`cat /sys/class/thermal/thermal_zone0/temp`
+echo $SW > /tmp/w_o2
+#test $SW -lt 40000 ; echo $? > /tmp/w_o3
+test $SW -lt 40000 ; SW=`echo $?`
+echo $SW > /tmp/w_o3

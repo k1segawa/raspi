@@ -1,0 +1,4 @@
+sudo /bin/sh
+cd /var/spool/cron/crontabs
+ls -l
+cat pi

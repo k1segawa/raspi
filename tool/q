@@ -1,0 +1,4 @@
+echo $pp
+pp=`v`
+export pp
+echo $pp

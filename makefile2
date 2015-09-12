@@ -1,0 +1,10 @@
+CC	= gcc
+SRC	= a.c
+OBJ	= $(SRC:.c=.o)
+TGT	= a
+
+INCLUDE	= -I./include
+LIBS	= -lwiringPi
+
+.c.o:
+	@$(CC) -c $@ $(OBJ) -c $(SRC) $(INCLUDE) $(LIBS)

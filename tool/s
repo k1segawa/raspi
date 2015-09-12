@@ -1,0 +1,2 @@
+echo ".bashrc change segawa kouichi"
+x11vnc -usepw -repeat

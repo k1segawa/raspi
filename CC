@@ -1,0 +1,14 @@
+#!/bin/sh
+#usage:$0 c-source[.c]
+#	wiringPi simple compile
+#	[]:option
+
+##a.c
+#B_NAME=${1##*/}
+##c
+#EXTENSION=${1##*.}
+
+#a
+F_NAME=${1%.*}
+
+cc $F_NAME".c" -o $F_NAME -lwiringPi
