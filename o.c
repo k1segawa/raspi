@@ -8,10 +8,10 @@
 /* 5(wiringPi Lib Command Pin No.) */
 /* 18(Hardware Header Pin No.) */
 
-#define OUTPUT_PIN	(14)
-/* 14(BCM2835 Lib Pin No.) */
-/* 15(wiringPi Lib Command Pin No.) */
-/* 8(Hardware Header Pin No.) */
+#define OUTPUT_PIN	(23)
+/* 23(BCM2835 Lib Pin No.) */
+/* 4(wiringPi Lib Command Pin No.) */
+/* 16(Hardware Header Pin No.) */
 
 #define S_BUF	(512)
 #define LIMIT	(40000)
@@ -62,8 +62,10 @@ int main()
 	fprintf(stdout, "v=%d\n",v);
 	if(v < LIMIT) {
 		digitalWrite(OUTPUT_PIN, 0);
+		fprintf(stdout, "0 output.\n");
 	} else {
 		digitalWrite(OUTPUT_PIN, 1);
+		fprintf(stdout, "1 output.\n");
 	}
 #endif
 	
