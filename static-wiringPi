@@ -1,0 +1,21 @@
+https://projects.drogon.net/raspberry-pi/wiringpi/download-and-install/
+
+John on September 23, 2013 at 5:46 pm said:
+
+For people with the same problem, the problem can be solved if you install the static library instead of the normal ./build.
+cd to wiringPi/wiringPi
+sudo make static
+sudo make install-static
+
+(AND)
+segawa append
+***************
+cd
+cd wiringPi/wiringPi
+sudo make static
+sudo make install-static
+cd raspi
+
+-lpthread -static
+[CC]
+cc $F_NAME".c" -o $F_NAME -lwiringPi -static -lpthread
