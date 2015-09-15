@@ -19,3 +19,33 @@ cd raspi
 -lpthread -static
 [CC]
 cc $F_NAME".c" -o $F_NAME -lwiringPi -static -lpthread
+
+
+***********************
+(under Japanese Only)
+***********************
+pi@raspberrypi ~/raspi $ CC o.c
+//usr/local/lib/libwiringPi.a(wiringPi.o): 関数 `wiringPiISR' 内:
+wiringPi.c:(.text+0x16fc): `pthread_mutex_lock' に対する定義されていない参照です
+wiringPi.c:(.text+0x171c): `pthread_create' に対する定義されていない参照です
+wiringPi.c:(.text+0x174c): `pthread_mutex_unlock' に対する定義されていない参照です
+//usr/local/lib/libwiringPi.a(softPwm.o): 関数 `softPwmThread' 内:
+softPwm.c:(.text+0x2c): `pthread_self' に対する定義されていない参照です
+softPwm.c:(.text+0x38): `pthread_setschedparam' に対する定義されていない参照です
+//usr/local/lib/libwiringPi.a(softPwm.o): 関数 `softPwmCreate' 内:
+softPwm.c:(.text+0x180): `pthread_create' に対する定義されていない参照です
+//usr/local/lib/libwiringPi.a(softPwm.o): 関数 `softPwmStop' 内:
+softPwm.c:(.text+0x200): `pthread_cancel' に対する定義されていない参照です
+softPwm.c:(.text+0x20c): `pthread_join' に対する定義されていない参照です
+//usr/local/lib/libwiringPi.a(softTone.o): 関数 `softToneThread' 内:
+softTone.c:(.text+0x20): `pthread_self' に対する定義されていない参照です
+softTone.c:(.text+0x2c): `pthread_setschedparam' に対する定義されていない参照です
+//usr/local/lib/libwiringPi.a(softTone.o): 関数 `softToneCreate' 内:
+softTone.c:(.text+0x14c): `pthread_create' に対する定義されていない参照です
+//usr/local/lib/libwiringPi.a(softTone.o): 関数 `softToneStop' 内:
+softTone.c:(.text+0x1c4): `pthread_cancel' に対する定義されていない参照です
+softTone.c:(.text+0x1d0): `pthread_join' に対する定義されていない参照です
+collect2: ld returned 1 exit status
+pi@raspberrypi ~/raspi $ 
+
+***********************
