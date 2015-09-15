@@ -1,3 +1,7 @@
+/*
+* Created by kouichi Segawa
+* 2015/09/15
+*/
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -76,7 +80,7 @@ int main(int argc, char *argv[])
 	fprintf(stdout, "%d", v);	/* print read value */
 #else
 /* OUTPUT */
-	pinMode(OUTPUT_PIN, OUTPUT);
+	pinMode(o_pin_no, OUTPUT);
 
 	DPRINT("int size=%d\n", sizeof(int));
 	if(strcmp(b,"") == 0) {
@@ -86,11 +90,11 @@ int main(int argc, char *argv[])
 		v = atoi(b);
 	}
 	DPRINT("v=%d\n",v);
-	if(v < LIMIT) {
-		digitalWrite(OUTPUT_PIN, 0);
+	if(v < limit) {
+		digitalWrite(o_pin_no, 0);
 		DPRINT("0 output.\n");
 	} else {
-		digitalWrite(OUTPUT_PIN, 1);
+		digitalWrite(o_pin_no, 1);
 		DPRINT("1 output.\n");
 	}
 #endif
