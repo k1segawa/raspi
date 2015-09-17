@@ -7,8 +7,6 @@
 #include <stdlib.h>
 #include "wiringPi.h"
 
-#define DEBUG
-
 #ifdef DEBUG
 #define DPRINT	printf
 #else
@@ -33,8 +31,6 @@ int main(int argc, char *argv[])
 	int rtn;
 	int v;
 
-/* OUTPUT */	
-#if 1
 	FILE *fp;
 	unsigned char b[S_BUF+1];
 	int o_pin_no;
@@ -62,7 +58,6 @@ int main(int argc, char *argv[])
 		pclose(fp);
 		DPRINT("temp val=%s", b);
 	}
-#endif
 
 	rtn = wiringPiSetupGpio();
 	if( rtn == -1 ) {
@@ -70,16 +65,6 @@ int main(int argc, char *argv[])
 		return 1;
 	}
 
-#if 0
-/* INPUT */
-	pullUpDnControl(INPUT_PIN, PUD_UP);	/* pullup */
-	pinMode(INPUT_PIN, INPUT);
-
-	v = 0;
-	v = digitalRead(INPUT_PIN);
-	fprintf(stdout, "%d", v);	/* print read value */
-#else
-/* OUTPUT */
 	pinMode(o_pin_no, OUTPUT);
 
 	DPRINT("int size=%d\n", sizeof(int));
@@ -97,7 +82,6 @@ int main(int argc, char *argv[])
 		digitalWrite(o_pin_no, 1);
 		DPRINT("1 output.\n");
 	}
-#endif
 	
 	return 0;
 }
