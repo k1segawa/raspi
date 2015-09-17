@@ -5,7 +5,10 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <getopt.h>
 #include "wiringPi.h"
+
+#define DEBUG
 
 #ifdef DEBUG
 #define DPRINT	printf
@@ -25,6 +28,7 @@
 
 #define S_BUF	(512)
 #define LIMIT	(40000)
+#define EOD		(-1)
 
 int main(int argc, char *argv[])
 {
@@ -36,17 +40,52 @@ int main(int argc, char *argv[])
 	int o_pin_no;
 	int limit;
 
+	struct option long_opts[] = {
+		{"out",		1, NULL, 0},
+		{"cpu",		1, NULL, 1},
+		{0, 0, 0, 0}
+	};
+
+	int res = 0;
+	int idx = 0;
+
+	while((res = getopt_long_only(argc, argv, "oc", long_opts, &idx)) != EOD) {
+		switch(res) {
+		case 0:	/* out */
+			DPRINT("out opt\n");
+			DPRINT("name=%s val=%s\n",long_opts[idx].name, optarg);
+			o_pin_no = atoi(optarg);
+			if(o_pin_no == 0) { /* 0 : not number */
+				fprintf(stderr, "Parameter not number : %s\n",optarg);
+			}
+			break;
+		case 1: /* cpu */
+			DPRINT("cpu opt\n");
+			DPRINT("name=%s val=%s\n",long_opts[idx].name, optarg);
+			limit = atoi(optarg);
+			if(limit == 0) { /* 0 : not number */
+				fprintf(stderr, "Parameter not number : %s\n",optarg);
+			}
+			break;
+		case 'o':
+		case 'c':
+			break;
+		}
+	}
+
+	DPRINT("idx=%d\n",idx);
+
 	if( argc == 1 ) {
 		/* default */
 		o_pin_no = OUTPUT_PIN;
 		limit = LIMIT;
-	} else if( argc == 3 ) {
-		o_pin_no = atoi(argv[1]);
-		limit = atoi(argv[2]);
 	} else {
-		fprintf(stderr, "Usage:%s\n",argv[0]);
-		fprintf(stderr, "      %s <port No.> <limit>\n",argv[0]);
-		return 1;
+		if(idx == 0 || o_pin_no == 0 || limit == 0) {
+			fprintf(stderr, "Usage:%s\n",argv[0]);
+			fprintf(stderr, "      %s --out=<port No.> --cpu=<limit>\n",argv[0]);
+			fprintf(stderr, "      %s --out <port No.> --cpu <limit>\n",argv[0]);
+			return 1;
+		}
 	}
 
 	fp = popen("cat /sys/class/thermal/thermal_zone0/temp", "r");
