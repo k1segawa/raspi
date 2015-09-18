@@ -8,8 +8,6 @@
 #include <getopt.h>
 #include "wiringPi.h"
 
-#define DEBUG
-
 #ifdef DEBUG
 #define DPRINT	printf
 #else
