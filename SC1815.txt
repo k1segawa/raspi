@@ -1,0 +1,26 @@
+<Header Pin No.>
+2 = 5V
+6 = GND
+16 = GPIO23(OUTPUT PIN)
+
+<Pin Assign>
+GPIO23---[ 10 k OUM ]--- B
+GND   ------------------ E
+5V    ------ (Fan) ----- C
+
+
+<Figure>
+	  +-----+
+	  |SC   |
+	  |1815 |
+	  +-----+
+	 E| C| B|
+	  |  |  |
+	  |  |  |
+6(GND)----+  |  +---[ 10 k OUM ]---16(GPIO23)
+	     |
+       Black |
+           (Fan)
+         Red |
+	     |
+2(5V )-------+
