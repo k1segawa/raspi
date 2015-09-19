@@ -1,0 +1,19 @@
+<Header Pin No.>
+6 = GND
+18 = GPIO24(INPUT PIN)
+
+<Pin Assign>
+GPIO24------------------ SW 0
+GND   ------------------ SW 1
+
+
+<Figure>
+	  +--+
+	  |SW|
+	  +--+
+	 0| 1|
+	  |  |
+	  |  |
+6(GND)----+  +----18(GPIO23)
+
+SW ON:shutdown
