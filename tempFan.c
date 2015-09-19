@@ -14,18 +14,20 @@
 #define DPRINT
 #endif
 
-#define INPUT_PIN	(24)
-/* 24(BCM2835 Lib Pin No.) */
-/* 5(wiringPi Lib Command Pin No.) */
+#define CMDNAME	"tempFan"
+
+#define INPUT_PORT	(24)
+/* 24(BCM2835 Lib Port No.) */
+/* 5(wiringPi Lib Command Port No.) */
 /* 18(Hardware Header Pin No.) */
 
-#define OUTPUT_PIN	(23)
-/* 23(BCM2835 Lib Pin No.) */
-/* 4(wiringPi Lib Command Pin No.) */
+#define OUTPUT_PORT	(23)
+/* 23(BCM2835 Lib Port No.) */
+/* 4(wiringPi Lib Command Port No.) */
 /* 16(Hardware Header Pin No.) */
 
 #define S_BUF	(512)
-#define LIMIT	(40000)
+#define LIMIT	(47000)
 #define EOD		(-1)
 
 int main(int argc, char *argv[])
@@ -35,7 +37,7 @@ int main(int argc, char *argv[])
 
 	FILE *fp;
 	unsigned char b[S_BUF+1];
-	int o_pin_no;
+	int o_port_no;
 	int limit;
 
 	struct option long_opts[] = {
@@ -52,8 +54,8 @@ int main(int argc, char *argv[])
 		case 0:	/* out */
 			DPRINT("out opt\n");
 			DPRINT("name=%s val=%s\n",long_opts[idx].name, optarg);
-			o_pin_no = atoi(optarg);
-			if(o_pin_no == 0) { /* 0 : not number */
+			o_port_no = atoi(optarg);
+			if(o_port_no == 0) { /* 0 : not number */
 				fprintf(stderr, "Parameter not number : %s\n",optarg);
 			}
 			break;
@@ -75,13 +77,14 @@ int main(int argc, char *argv[])
 
 	if( argc == 1 ) {
 		/* default */
-		o_pin_no = OUTPUT_PIN;
+		o_port_no = OUTPUT_PORT;
 		limit = LIMIT;
 	} else {
-		if(idx == 0 || o_pin_no == 0 || limit == 0) {
-			fprintf(stderr, "Usage:%s\n",argv[0]);
-			fprintf(stderr, "      %s --out=<port No.> --cpu=<limit>\n",argv[0]);
-			fprintf(stderr, "      %s --out <port No.> --cpu <limit>\n",argv[0]);
+		if(idx == 0 || o_port_no == 0 || limit == 0) {
+			fprintf(stderr, "Usage:%s\n",CMDNAME);
+			fprintf(stderr, "      %s --out <port No.> --cpu <limit>\n",CMDNAME);
+			fprintf(stderr, "      %s --out=<port No.> --cpu=<limit>\n",CMDNAME);
+			fprintf(stderr, "  (default:--out 23 --cpu 47000)\n");
 			return 1;
 		}
 	}
@@ -102,7 +105,7 @@ int main(int argc, char *argv[])
 		return 1;
 	}
 
-	pinMode(o_pin_no, OUTPUT);
+	pinMode(o_port_no, OUTPUT);
 
 	DPRINT("int size=%d\n", sizeof(int));
 	if(strcmp(b,"") == 0) {
@@ -113,10 +116,10 @@ int main(int argc, char *argv[])
 	}
 	DPRINT("v=%d\n",v);
 	if(v < limit) {
-		digitalWrite(o_pin_no, 0);
+		digitalWrite(o_port_no, 0);
 		DPRINT("0 output.\n");
 	} else {
-		digitalWrite(o_pin_no, 1);
+		digitalWrite(o_port_no, 1);
 		DPRINT("1 output.\n");
 	}
 	
