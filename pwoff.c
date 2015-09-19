@@ -8,7 +8,10 @@
 #include <getopt.h>
 #include "wiringPi.h"
 #include <sys/ipc.h>
-#include <sys/sem.h>
+#include <sys/shm.h>
+#include <errno.h>
+#include <sys/time.h>
+#include <time.h>
 
 #ifdef DEBUG
 #define DPRINT	printf
@@ -37,14 +40,12 @@ int main(int argc, char *argv[])
 	int i_pin_no;
 	int shtdwn;
 
-	int semid;
 	key_t key;
-	union semun {
-		int				val;	/* SETVAL */
-		struct semid_ds	*buf;	/* IPC_STAT, IPC_SET buf */
-		unsigned short	*array;	/* GETALL, SETALL array */
-	} ctl_arg;
-	struct sembuf sops[1];
+	int shmid;
+	struct shmid_ds shmbuf;
+
+	struct timeval tv_old;
+	struct timeval tv_new;
 
 	struct option long_opts[] = {
 		{"input",	1, NULL, 0},
@@ -94,45 +95,15 @@ int main(int argc, char *argv[])
 		}
 	}
 
-	key = ftok("/bin/cp", 1);
-#if 1
-	if((semid = semget(key, 1, 0666 | IPC_CREAT)) == -1) {
-		fprintf(stderr, "semaphore get error\n");
+	/* No allow dup run */
+	key = ftok("/bin/cp", 901288363);
+	if((shmid = shmget(key, 1, IPC_CREAT | IPC_EXCL)) == -1) {
+		if(errno == EEXIST) {
+			fprintf(stderr, "EEXIST.\n");
+		}
+		fprintf(stderr, "Not overlap run.\n");
 		return 1;
 	}
-
-	sops[0].sem_num = 0;
-	sops[0].sem_op = 1;
-	sops[0].sem_flg = 0;
-	if(semop(semid, sops, 1) == -1) {
-		fprintf(stderr, "semaphore op error\n");
-		semctl(semid, 0, IPC_RMID, ctl_arg);
-		return 1;
-	}
-#else
-	if((semid = semget(IPC_PRIVATE, 0, /*0600*/ IPC_CREAT | IPC_EXCL)) == -1) {
-		fprintf(stderr, "semaphore get error\n");
-		return 1;
-	}
-
-	ctl_arg.val = 1;
-	if(semctl(semid, 0, SETVAL, ctl_arg) == -1) {
-		fprintf(stderr, "semaphore ctl error\n");
-		semctl(semid, 0, IPC_RMID, ctl_arg);
-		return 1;
-	}
-
-	sops[0].sem_num = 0;
-	sops[0].sem_op = -1;
-	sops[0].sem_flg = IPC_NOWAIT;
-	if(semop(semid, sops, 1) == -1) {
-		fprintf(stderr, "semaphore op error\n");
-		semctl(semid, 0, IPC_RMID, ctl_arg);
-		return 1;
-	}
-#endif
-
-	sleep(10);
 
 	rtn = wiringPiSetupGpio();
 	if( rtn == -1 ) {
@@ -145,11 +116,31 @@ int main(int argc, char *argv[])
 
 	v = 0;  
 	v = digitalRead(i_pin_no);
-	fprintf(stdout, "val=%d", v);
+	DPRINT("val=%d", v);
 
-	/*system("/sbin/shutdown");
-	*/
-	system("/bin/ls");
+	if(v == 1) {
+		sleep(shtdwn);
+#if 0
+		timerclear(&tv_old);
+		timerclear(&tv_new);
+		DPRINT("tv_old=%d,tv_new=%d\n",
+			(timerisset(&tv_old)),
+			(timerisset(&tv_new)));
+		if(gettimeofday(&tv_old, NULL)) {
+			fprintf(stderr, "gettimeofday Error\n");
+			return 1;
+		}
+#endif
+		/*system("/sbin/shutdown");
+		*/
+		system("/bin/ls");
+	}
+
+	/* shard memory destory */
+	if(shmctl(shmid, IPC_RMID, &shmbuf) == -1) {
+		fprintf(stderr, "shmctl Error\n");
+		return 1;
+	}
 	
 	return 0;
 }
