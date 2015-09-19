@@ -29,6 +29,7 @@
 /* 4(wiringPi Lib Command Pin No.) */
 /* 16(Hardware Header Pin No.) */
 
+#define S_BUF	(512)
 #define SHTDWN	(30)
 #define EOD		(-1)
 
@@ -36,6 +37,10 @@ int main(int argc, char *argv[])
 {
 	int rtn;
 	int v;
+
+	FILE *fp;
+	unsigned char b[S_BUF];
+	char *tp;
 
 	int i_pin_no;
 	int shtdwn;
@@ -96,6 +101,31 @@ int main(int argc, char *argv[])
 	}
 
 	/* No allow dup run */
+	memset(b,0,S_BUF);
+	fp = popen("ps -C pwoff --no-headers", "r");
+	if(fp == NULL) {
+		fprintf(stderr, "fopen():Open Error.\n");
+		return 1;
+	} else {
+		/*fgets(b, S_BUF, fp);*/
+		fread(b, 1, S_BUF, fp);
+		pclose(fp);
+		DPRINT("val:\n%s",b);
+		tp = strstr(b, "pwoff");
+		DPRINT("tp:\n%s",tp);
+		DPRINT("strlen(tp)=%d\n",strlen(tp));
+		if(strlen(tp) == strlen("pwoff")+1) {
+			DPRINT("One Process running.\n");
+		} else {
+			/* No allow dup run */
+			fprintf(stderr, "Two Processes running Error. Stop.\n");
+			return 0;	/* normal */
+		}
+	}
+
+#if 0
+	/* shard memory create */
+	/* No allow dup run */
 	key = ftok("/bin/cp", 901288363);
 	if((shmid = shmget(key, 1, IPC_CREAT | IPC_EXCL)) == -1) {
 		if(errno == EEXIST) {
@@ -104,6 +134,7 @@ int main(int argc, char *argv[])
 		fprintf(stderr, "Not overlap run.\n");
 		return 1;
 	}
+#endif
 
 	rtn = wiringPiSetupGpio();
 	if( rtn == -1 ) {
@@ -116,7 +147,7 @@ int main(int argc, char *argv[])
 
 	v = 0;  
 	v = digitalRead(i_pin_no);
-	DPRINT("val=%d", v);
+	DPRINT("val=%d\n", v);
 
 	if(v == 1) {
 		sleep(shtdwn);
@@ -131,16 +162,17 @@ int main(int argc, char *argv[])
 			return 1;
 		}
 #endif
-		/*system("/sbin/shutdown");
-		*/
-		system("/bin/ls");
+		system("/usr/bin/sudo /sbin/shutdown -k");
+		/*system("/bin/ls");*/
 	}
 
+#if 0
 	/* shard memory destory */
 	if(shmctl(shmid, IPC_RMID, &shmbuf) == -1) {
 		fprintf(stderr, "shmctl Error\n");
 		return 1;
 	}
+#endif
 	
 	return 0;
 }
