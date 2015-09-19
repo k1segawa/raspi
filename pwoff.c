@@ -129,7 +129,8 @@ int main(int argc, char *argv[])
 	v = digitalRead(i_port_no);
 	DPRINT("val=%d\n", v);
 
-	if(v == 1) {
+	/* SW ON */
+	if(v == 0) {	/* 0=ON 1=OFF:because pullup */
 		sleep(shtdwn);
 		system("/usr/bin/sudo /sbin/shutdown -h now");
 	}
