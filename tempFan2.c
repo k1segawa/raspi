@@ -116,10 +116,19 @@ int main(int argc, char *argv[])
 		if(idx == 0 || o_port_no == 0 || limit == 0 /*|| power == 0*/ || maxlimit == 0) {
 			fprintf(stderr, "Usage:%s\n",CMDNAME);
 			fprintf(stderr, "      %s --out <port No.> --cpu <limit(1~)> --power <pwm(0~1023)> --full <limit(1~):pwm=1023>\n",CMDNAME);
-			fprintf(stderr, "      %s --out <port No.> --cpu=<limit(1~)> --power=<pwm(0~1023)> --full=<limit(1~):pwm=1023>\n",CMDNAME);
+			fprintf(stderr, "      %s --out=<port No.> --cpu=<limit(1~)> --power=<pwm(0~1023)> --full=<limit(1~):pwm=1023>\n",CMDNAME);
 			fprintf(stderr, "  default:\n");
 			fprintf(stderr, "  (=%s --out 18 --cpu 47000 --power 990 --full 75000)\n",CMDNAME);
-			fprintf(stderr, "  (pwm port:12,13,18,19)\n");
+			fprintf(stderr, "  (47~74.999C:little power, 75C~:full power)\n");
+			fprintf(stderr, "  (little power=1~1022(not need:990))\n");
+			fprintf(stderr, "  pwm port:12,13,18,19\n");
+			fprintf(stderr, "  example:\n");
+			fprintf(stderr, "  (47C~:little power)\n");
+			fprintf(stderr, "  (=%s --out 18 --cpu 47000 --power 990 --full 47000)\n",CMDNAME);
+			fprintf(stderr, "  (47C~:full power)\n");
+			fprintf(stderr, "  (=%s --out 18 --cpu 47000 --power 1023 --full 47000)\n",CMDNAME);
+			fprintf(stderr, "  (fan stop)\n");
+			fprintf(stderr, "  (=%s --out 18 --cpu 47000 --power 0 --full 47000)\n",CMDNAME);
 			return 1;
 		}
 	}
