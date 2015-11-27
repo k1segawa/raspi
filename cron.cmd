@@ -6,5 +6,5 @@ crontab -e
 
 tempFan2:
 #* * * * * /usr/bin/sudo /home/pi/raspi/tempFan --out=23 --cpu=48000 1> /dev/null 2>>/dev/null
-* * * * * /usr/bin/sudo /home/pi/raspi/tempFan2 --out=18 --cpu=48000 --power 97 1> /dev/null 2>>/dev/null
+* * * * * /usr/bin/sudo /home/pi/raspi/tempFan2 --out=18 --cpu=31000 --power 1023 1> /dev/null 2>>/dev/null
 

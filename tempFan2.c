@@ -1,7 +1,7 @@
 /*
 * Created by kouichi Segawa
 * 2015/09/15
-* 2015/10/28
+* 2015/11/27
 */
 #include <stdio.h>
 #include <string.h>
@@ -76,9 +76,11 @@ int main(int argc, char *argv[])
 			DPRINT("power opt\n");
 			DPRINT("name=%s val=%s\n",long_opts[idx].name, optarg);
 			power = atoi(optarg);
+#if 0
 			if(power == 0) { /* 0 : not number */
 				fprintf(stderr, "Parameter not number : %s\n",optarg);
 			}
+#endif
 			break;
 		case 'o':
 		case 'c':
@@ -93,9 +95,20 @@ int main(int argc, char *argv[])
 		/* default */
 		o_port_no = OUTPUT_PORT;
 		limit = LIMIT;
-		power = POWER;
+		switch(o_port_no) {
+			case 12:
+			case 13:
+			case 18:
+			case 19:
+				power = PWMMAX;
+			break;
+			default:
+				power = POWER;
+			break;
+		}
+
 	} else {
-		if(idx == 0 || o_port_no == 0 || limit == 0 || power == 0) {
+		if(idx == 0 || o_port_no == 0 || limit == 0 /*|| power == 0*/) {
 			fprintf(stderr, "Usage:%s\n",CMDNAME);
 			fprintf(stderr, "      %s --out <port No.> --cpu <limit> --power <parcent>\n",CMDNAME);
 			fprintf(stderr, "      %s --out=<port No.> --cpu=<limit> --power=<parcent>\n",CMDNAME);
@@ -126,14 +139,9 @@ int main(int argc, char *argv[])
 		case 18:
 		case 19:
 			pinMode(o_port_no, PWM_OUTPUT);
-			pwmWrite(o_port_no, (int)(PWMMAX/100*power));
 		break;
 		default:
-#if 1
 			pinMode(o_port_no, OUTPUT);
-#else
-			softPwmCreate(o_port_no, 0/*100*/, 100);
-#endif
 		break;
 	}
 
@@ -145,8 +153,8 @@ int main(int argc, char *argv[])
 		v = atoi(b);
 	}
 	DPRINT("v=%d\n",v);
+
 	if(v < limit) {
-		//digitalWrite(o_port_no, 0);
 		switch(o_port_no) {
 			case 12:
 			case 13:
@@ -155,32 +163,24 @@ int main(int argc, char *argv[])
 				pwmWrite(o_port_no, 0);
 			break;
 			default:
-#if 1
 				digitalWrite(o_port_no, 0);
-#else
-				softPwmWrite(o_port_no, 0);
-#endif
 			break;
 		}
 		DPRINT("0 output.\n");
 	} else {
-		//digitalWrite(o_port_no, 1);
 		switch(o_port_no) {
 			case 12:
 			case 13:
 			case 18:
 			case 19:
-				pwmWrite(o_port_no, PWMMAX/100*power);
+				pwmWrite(o_port_no, power);
+				DPRINT("%d output.\n",power);
 			break;
 			default:
-#if 1
 				digitalWrite(o_port_no, 1);
-#else
-				softPwmWrite(o_port_no, power);
-#endif
+				DPRINT("1 output.\n",power);
 			break;
 		}
-		DPRINT("1 output.\n");
 	}
 	
 	return 0;
