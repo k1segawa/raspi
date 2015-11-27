@@ -22,16 +22,19 @@
 /* 5(wiringPi Lib Command Port No.) */
 /* 18(Hardware Header Pin No.) */
 
-#define OUTPUT_PORT	(23)
-/* 23(BCM2835 Lib Port No.) */
-/* 4(wiringPi Lib Command Port No.) */
-/* 16(Hardware Header Pin No.) */
+#define OUTPUT_PORT	(18)
+/* 18(BCM2835 Lib Port No.) */
+/* 1(wiringPi Lib Command Port No.) */
+/* 12(Hardware Header Pin No.) */
 
 #define S_BUF	(512)
 #define LIMIT	(47000)
+#define MAXLIMIT	(75000)
 #define PWMMAX	(1023)
-#define POWER	(100)
+#define POWER	(990)
 #define EOD		(-1)
+
+void o_port_power(int, int);
 
 int main(int argc, char *argv[])
 {
@@ -43,18 +46,20 @@ int main(int argc, char *argv[])
 	int o_port_no;
 	int limit;
 	int power;
+	int maxlimit;
 
 	struct option long_opts[] = {
 		{"out",		1, NULL, 0},
 		{"cpu",		1, NULL, 1},
 		{"power",	1, NULL, 2},
+		{"full",	1, NULL, 3},
 		{0, 0, 0, 0}
 	};
 
 	int res = 0;
 	int idx = 0;
 
-	while((res = getopt_long_only(argc, argv, "ocp", long_opts, &idx)) != EOD) {
+	while((res = getopt_long_only(argc, argv, "ocpf", long_opts, &idx)) != EOD) {
 		switch(res) {
 		case 0:	/* out */
 			DPRINT("out opt\n");
@@ -82,9 +87,18 @@ int main(int argc, char *argv[])
 			}
 #endif
 			break;
+		case 3: /* full */
+			DPRINT("full opt\n");
+			DPRINT("name=%s val=%s\n",long_opts[idx].name, optarg);
+			maxlimit = atoi(optarg);
+			if(maxlimit == 0) { /* 0 : not number */
+				fprintf(stderr, "Parameter not number : %s\n",optarg);
+			}
+			break;
 		case 'o':
 		case 'c':
 		case 'p':
+		case 'f':
 			break;
 		}
 	}
@@ -95,24 +109,17 @@ int main(int argc, char *argv[])
 		/* default */
 		o_port_no = OUTPUT_PORT;
 		limit = LIMIT;
-		switch(o_port_no) {
-			case 12:
-			case 13:
-			case 18:
-			case 19:
-				power = PWMMAX;
-			break;
-			default:
-				power = POWER;
-			break;
-		}
+		power = POWER;
+		maxlimit = MAXLIMIT;
 
 	} else {
-		if(idx == 0 || o_port_no == 0 || limit == 0 /*|| power == 0*/) {
+		if(idx == 0 || o_port_no == 0 || limit == 0 /*|| power == 0*/ || maxlimit == 0) {
 			fprintf(stderr, "Usage:%s\n",CMDNAME);
-			fprintf(stderr, "      %s --out <port No.> --cpu <limit> --power <parcent>\n",CMDNAME);
-			fprintf(stderr, "      %s --out=<port No.> --cpu=<limit> --power=<parcent>\n",CMDNAME);
-			fprintf(stderr, "  (default:--out 23 --cpu 47000 --power 100)\n");
+			fprintf(stderr, "      %s --out <port No.> --cpu <limit(1~)> --power <pwm(0~1023)> --full <limit(1~):pwm=1023>\n",CMDNAME);
+			fprintf(stderr, "      %s --out <port No.> --cpu=<limit(1~)> --power=<pwm(0~1023)> --full=<limit(1~):pwm=1023>\n",CMDNAME);
+			fprintf(stderr, "  default:\n");
+			fprintf(stderr, "  (=%s --out 18 --cpu 47000 --power 990 --full 75000)\n",CMDNAME);
+			fprintf(stderr, "  (pwm port:12,13,18,19)\n");
 			return 1;
 		}
 	}
@@ -154,6 +161,32 @@ int main(int argc, char *argv[])
 	}
 	DPRINT("v=%d\n",v);
 
+#if 1
+	if(limit < maxlimit) {
+		if(v < limit) {
+			o_port_power(o_port_no, 0);
+		} else if(limit <= v && v < maxlimit) {
+			o_port_power(o_port_no, power);
+		} else {
+			o_port_power(o_port_no, PWMMAX);
+		}
+	} else if(limit == maxlimit) {
+		/* power active */
+		if(v < limit) {
+			o_port_power(o_port_no, 0);
+		} else {
+			o_port_power(o_port_no, power);
+		}
+	} else {
+		if(v < maxlimit) {
+			o_port_power(o_port_no, 0);
+		} else if(maxlimit <= v && v < limit) {
+			o_port_power(o_port_no, PWMMAX);
+		} else {
+			o_port_power(o_port_no, power);
+		}
+	}
+#else
 	if(v < limit) {
 		switch(o_port_no) {
 			case 12:
@@ -178,10 +211,42 @@ int main(int argc, char *argv[])
 			break;
 			default:
 				digitalWrite(o_port_no, 1);
-				DPRINT("1 output.\n",power);
+				DPRINT("1 output.\n");
 			break;
 		}
 	}
-	
+#endif	
 	return 0;
+}
+
+void o_port_power(int port_no, int p_val)
+{
+	if(p_val == 0) {
+		switch(port_no) {
+			case 12:
+			case 13:
+			case 18:
+			case 19:
+				pwmWrite(port_no, 0);
+			break;
+			default:
+				digitalWrite(port_no, 0);
+			break;
+		}
+		DPRINT("0 output.\n");
+	} else {
+		switch(port_no) {
+			case 12:
+			case 13:
+			case 18:
+			case 19:
+				pwmWrite(port_no, p_val);
+				DPRINT("%d output.\n",p_val);
+			break;
+			default:
+				digitalWrite(port_no, 1);
+				DPRINT("1 output.\n");
+			break;
+		}
+	}
 }
