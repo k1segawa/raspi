@@ -13,7 +13,8 @@ F_NAME=${1%.*}
 
 #echo $0 $1 $2
 
-cc $F_NAME".c" -o $F_NAME -lwiringPi -static -lpthread
+cc $F_NAME".c" -o $F_NAME -lwiringPi -lpthread
+#cc $F_NAME".c" -o $F_NAME -lwiringPi -static -lpthread
 #cc $F_NAME".c" -o $F_NAME -lwiringPi -static
 #cc $F_NAME".c" -o $F_NAME -lwiringPi
 #cc $F_NAME".c" -o $F_NAME -l/usr/local/lib/libwiringPi.so.2.25

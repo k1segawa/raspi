@@ -1,0 +1,148 @@
+tempFanの使い方
+
+保存場所
+https://github.com/k1segawa/raspi
+(githubのフリー版なので全ユーザ公開でプライベートではない)
+
+編集・ロード・保存方法
+（１）単にtempFanをダウンロードするだけの場合
+ブラウザに上記URLを入力し、releaseをクリック、tempFanをクリック。
+右端にDownloadとHistoryボタンがあるので、
+Downloadをクリック。
+
+ダウンロードされた場所に移動して、
+chmod a+x tempFan
+
+sudo ./tempFan
+Unable to determine hardware version. I see: Hardware	: BCM2835
+,
+ - expecting BCM2708 or BCM2709. Please report this to projects@drogon.net
+と出るのでraspi2 Model B(RP2 B)と raspi3 Model B+ (RP3 B+)では違うのかもしれない。
+リコンパイルか、ヘッダー・ライブラリ修正後リコンパイル要か。
+
+
+
+
+＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊
+[プロジェクト全体のコピー]
+git clone https://github.com/k1segawa/raspi
+でgithubにアップしてあるリポジトリをローカルにコピー
+
+[Git ビジュアルツール]
+gitk
+git-gui
+
+URL:
+https://git-scm.com/book/ja/v2/Appendix-A%3A-%E3%81%9D%E3%81%AE%E4%BB%96%E3%81%AE%E7%92%B0%E5%A2%83%E3%81%A7%E3%81%AEGit-%E3%82%B0%E3%83%A9%E3%83%95%E3%82%A3%E3%82%AB%E3%83%AB%E3%82%A4%E3%83%B3%E3%82%BF%E3%83%95%E3%82%A7%E3%83%BC%E3%82%B9
+https://git-scm.com/book/ja/v2/Appendix-A%3A-%E3%81%9D%E3%81%AE%E4%BB%96%E3%81%AE%E7%92%B0%E5%A2%83%E3%81%A7%E3%81%AEGit-%E3%82%B0%E3%83%A9%E3%83%95%E3%82%A3%E3%82%AB%E3%83%AB%E3%82%A4%E3%83%B3%E3%82%BF%E3%83%95%E3%82%A7%E3%83%BC%E3%82%B9
+
+Appendix-A%3A-その他の環境でのGit-グラフィカルインタフェース
+
+(google 検索：gitk    --> Git - グラフィカルインターフェース)
+
+インストール：
+sudo apt install gitk
+sudo apt install git-gui
+
+＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊
+
+tempFanの件
+どうやら「スタティック・リンク」がだめみたい。
+/usr/lib/libwiringPi.so はあるが、
+/usr/lib/libwiringPi.a(または.o)はない。
+
+sudo find / -name libwiringPi.so -print
+
+コンパイルに使ってたCCというシェルスクリプト、cc tempFan.c -o tempFan -lwiringPi -static -lpthread
+を実行すると、
+/usr/bin/ld: -lwiringPi が見つかりません、と出る。
+
+の-staticを取ればコンパイルエラーがなくなり実行できるようです。
+
+さてpin互換なのかな。デフォルトではBCM記法でGPIO 23なのだけど、GPIO 番号を使ったほうがいいのかそこも調査します。
+
+あと、Fan ５V 0.09Aとあったので、GPIO ピンの１本あたりMAX 16mAとか産業用にはしっかりトランジスタと抵抗はさんだほうがいいかも。3Vだとどうなのかもあるけど、テストには直でやってみるけども。
+
+
+電話で話したとおり、コンパイルオプションの「-static」を取ってリコンパイルしてアップする。
+下位互換は取らないのでシェルスクリプト "CC" の修正、コンパイル後の tempFan / tempFan2 のアップロードをする。
+release にはtempFan(とpwoff)しか上げてないので、tempFan2は基本的にはテストレベル（release/SW.txtとSC1815.txtに詳しい）。
+
+tempFanのみ提供予定（任意のCPU温度を超えたら任意のピンのOFF→ON）
+tempFan2はプロ版（任意のCPU温度を超えたら任意のピンをPWMでOFF→90(この数字を変更可)%ON、100%ONにするCPU温度も指定可能←これが下位バージョンtempFanの機能。オプション名は変わっている(--CPU → --fullに変更)のでcrontabに書くときの記述変更要。）
+[それぞれのUsageが詳しい]
+＝＝＝＝＝＝＝＝＝
+pi@raspberrypi:~/prog/tempfan/raspi $ ./tempFan --help
+./tempFan: unrecognized option '--help'
+Usage:tempFan
+      tempFan --out <port No.> --cpu <limit>
+      tempFan --out=<port No.> --cpu=<limit>
+  (default:--out 23 --cpu 47000)
+pi@raspberrypi:~/prog/tempfan/raspi $ ./tempFan2 --help
+./tempFan2: unrecognized option '--help'
+Usage:tempFan2
+      tempFan2 --out <port No.> --cpu <limit(1~)> --power <pwm(0~1023)> --full <limit(1~):pwm=1023>
+      tempFan2 --out=<port No.> --cpu=<limit(1~)> --power=<pwm(0~1023)> --full=<limit(1~):pwm=1023>
+  default:
+  (=tempFan2 --out 18 --cpu 47000 --power 990 --full 75000)
+  (47~74.999C:little power, 75C~:full power)
+  (little power=1~1022(not need:990))
+  pwm port:12,13,18,19
+  example:
+  (47C~:little power)
+  (=tempFan2 --out 18 --cpu 47000 --power 990 --full 47000)
+  (47C~:full power)
+  (=tempFan2 --out 18 --cpu 47000 --power 1023 --full 47000)
+  (fan stop)
+  (=tempFan2 --out 18 --cpu 47000 --power 0 --full 47000)
+＝＝＝＝＝＝＝＝＝
+
+
+一応pwoff.cもスタティックでエラーなのではずしてコンパイルしたが、sleepでワーニング出てる。実行形式はできてる。
+pi@raspberrypi:~/prog/tempfan/raspi $ sudo ./pwoff
+Unable to determine hardware version. I see: Hardware	: BCM2835
+,
+ - expecting BCM2708 or BCM2709. Please report this to projects@drogon.net
+pi@raspberrypi:~/prog/tempfan/raspi $ ./CC pwoff.c
+pwoff.c: In function ‘main’:
+pwoff.c:134:3: warning: implicit declaration of function ‘sleep’ [-Wimplicit-function-declaration]
+   sleep(shtdwn);
+   ^~~~~
+pi@raspberrypi:~/prog/tempfan/raspi $ ls -la
+合計 1032
+drwxr-xr-x 7 pi pi   4096 11月 13 21:36 .
+drwxr-xr-x 3 pi pi   4096 11月 13 19:42 ..
+drwxr-xr-x 8 pi pi   4096 11月 13 19:43 .git
+-rw-r--r-- 1 pi pi  12288 11月 13 21:16 .tempFan.c.swp
+-rwxr-xr-x 1 pi pi    406 11月 13 21:33 CC
+-rw-r--r-- 1 pi pi   2986 11月 13 19:42 README.txt
+-rw-r--r-- 1 pi pi    363 11月 13 19:42 SC1815.txt
+-rw-r--r-- 1 pi pi    226 11月 13 19:42 SW.txt
+-rwxr-xr-x 1 pi pi   8468 11月 13 20:24 a
+-rw-r--r-- 1 pi pi    483 11月 13 19:42 a.c
+-rw-r--r-- 1 pi pi   1428 11月 13 20:24 a.o
+-rw-r--r-- 1 pi pi    396 11月 13 19:42 a2.c
+-rw-r--r-- 1 pi pi    439 11月 13 19:42 a3.c
+-rw-r--r-- 1 pi pi    483 11月 13 19:42 b.c
+-rw-r--r-- 1 pi pi    413 11月 13 19:42 cron.cmd
+drwxr-xr-x 2 pi pi   4096 11月 13 19:42 doc
+drwxr-xr-x 2 pi pi   4096 11月 13 19:42 examp
+-rw-r--r-- 1 pi pi     64 11月 13 19:42 makefile
+-rw-r--r-- 1 pi pi    144 11月 13 19:42 makefile2
+-rwxr-xr-x 1 pi pi 853653 11月 13 19:42 o
+-rwxr-xr-x 1 pi pi   7692 11月 13 19:42 o-Dynamic
+-rw-r--r-- 1 pi pi   1331 11月 13 19:42 pi.crontab
+-rwxr-xr-x 1 pi pi  12992 11月 13 21:36 pwoff     <------ここ
+-rw-r--r-- 1 pi pi   2930 11月 13 19:42 pwoff.c
+drwxr-xr-x 2 pi pi   4096 11月 13 19:42 release
+-rw-r--r-- 1 pi pi   2388 11月 13 19:42 static-wiringPi
+-rwxr-xr-x 1 pi pi   8676 11月 13 20:42 tempFan
+-rw-r--r-- 1 pi pi   2559 11月 13 19:42 tempFan.c
+-rw-r--r-- 1 pi pi   2559 11月 13 19:42 tempFan.c.org
+-rw-r--r-- 1 pi pi   1001 11月 13 19:42 tempFan.org.c
+-rwxr-xr-x 1 pi pi  12980 11月 13 21:17 tempFan2
+-rw-r--r-- 1 pi pi   5638 11月 13 19:42 tempFan2.c
+-rw-r--r-- 1 pi pi     75 11月 13 19:42 testmail.txt
+drwxr-xr-x 2 pi pi   4096 11月 13 19:42 tool
+-rw-r--r-- 1 pi pi   4334 11月 13 19:42 tool.doc
+＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝
